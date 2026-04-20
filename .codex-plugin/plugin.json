@@ -1,0 +1,6 @@
+{
+  "name": "neohive",
+  "version": "1.0.0",
+  "description": "NeoHive cognitive memory for OpenAI Codex — MCP server registration plus skills for session setup, local-to-hive memory migration, documentation design, and post-session learning extraction.",
+  "skills": "./skills/"
+}
