@@ -22,9 +22,51 @@ Open with this exact script (do not paraphrase):
 
 Wait for acknowledgement (any affirmative reply, or just continue if they say nothing).
 
-## Phase 1 — Verify MCP reachability
+## Phase 1 — Register and verify the MCP server
 
-Call `list_hives` immediately. Interpret the outcome:
+The plugin ships **without** a pre-configured MCP server, so the first task is registering your NeoHive gateway with Codex.
+
+### 1a. Check whether a NeoHive MCP is already registered
+
+Run this to detect any `*neohive*`-keyed MCP server in the user's Codex config:
+
+```bash
+python3 - <<'PY' 2>/dev/null || echo "no neohive MCP found"
+import json, os, glob
+found = []
+candidates = [os.path.expanduser("~/.codex/config.json")] + glob.glob(os.path.expanduser("~/.codex/mcp*.json"))
+for path in candidates:
+    try:
+        with open(path) as f: data = json.load(f)
+    except Exception: continue
+    servers = data.get("mcpServers", data) if isinstance(data, dict) else {}
+    if not isinstance(servers, dict): continue
+    for k, v in servers.items():
+        if "neohive" in k.lower() and isinstance(v, dict):
+            found.append(f"{path}: {k} -> {v.get('url', '<no url>')}")
+for line in found or ["no neohive MCP found"]:
+    print(line)
+PY
+```
+
+- **If one is found:** call `list_hives` and interpret per the table below.
+- **If none is found:** guide the user to register one (see 1b), then rerun `list_hives`.
+
+### 1b. Registering a server (only if none found)
+
+Tell the user:
+
+> The NeoHive plugin doesn't bundle a default MCP server — you register yours explicitly through Codex's MCP configuration.
+>
+> Name the server with a key containing `neohive` (e.g. `neohive`) and point it at your gateway URL (e.g. `https://your-neohive-host/hiveminds/<hive-id>/mcp`). See the [Codex MCP docs](https://developers.openai.com/codex/plugins/build) for the exact configuration path on your platform.
+>
+> After registering, restart Codex and rerun the `getting-started` skill.
+
+Pause here until the user confirms they've registered it, or say "skip" to jump to Phase 4.
+
+### 1c. Verify with `list_hives`
+
+Once a server is registered, call `list_hives` and interpret:
 
 | Outcome | What to tell the user |
 |---|---|
@@ -37,12 +79,31 @@ Call `list_hives` immediately. Interpret the outcome:
 Run these checks and report results in a compact block:
 
 ```bash
-# 1. Is .mcp.json present in the plugin install?
-ls ~/.codex/plugins/cache/*/neohive/*/.mcp.json 2>&1 || echo "missing"
-# 2. Is NEOHIVE_TOKEN set?
+# 1. Is NEOHIVE_TOKEN set?
 [ -n "${NEOHIVE_TOKEN:-}" ] && echo "token set" || echo "token not set"
-# 3. Can we reach the server?
-grep -oE 'https?://[^"]+' ~/.codex/plugins/cache/*/neohive/*/.mcp.json 2>/dev/null | head -1 | xargs -I{} curl -sS -o /dev/null -w "HTTP %{http_code}\n" --max-time 5 "{}" 2>&1 || true
+# 2. Can we reach the registered server?
+python3 - <<'PY' 2>/dev/null
+import json, os, glob, urllib.request, ssl
+url = None
+for path in [os.path.expanduser("~/.codex/config.json")] + glob.glob(os.path.expanduser("~/.codex/mcp*.json")):
+    try:
+        with open(path) as f: data = json.load(f)
+    except Exception: continue
+    servers = data.get("mcpServers", data) if isinstance(data, dict) else {}
+    if not isinstance(servers, dict): continue
+    for k, v in servers.items():
+        if "neohive" in k.lower() and isinstance(v, dict) and v.get("url"):
+            url = v["url"]; break
+    if url: break
+if not url:
+    print("no neohive URL registered — rerun 1b"); raise SystemExit
+try:
+    ctx = ssl.create_default_context(); ctx.check_hostname = False; ctx.verify_mode = ssl.CERT_NONE
+    with urllib.request.urlopen(urllib.request.Request(url, method="GET"), timeout=5, context=ctx) as r:
+        print(f"HTTP {r.status} from {url}")
+except Exception as e:
+    print(f"unreachable: {type(e).__name__}: {e}")
+PY
 ```
 
 Then offer the user: "Fix token now", "I'll fix it later and restart Codex", "Skip MCP setup for now". If they skip, jump to Phase 4 with a warning that memory features won't work.

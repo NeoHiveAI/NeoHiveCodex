@@ -10,7 +10,7 @@ Follow your Codex plugin install flow for GitHub sources pointing at `NeoHiveAi/
 
 ### 2. Run the guided setup
 
-Invoke the `getting-started` skill. It walks through verifying the MCP server, setting up auth, migrating any existing project memory (`CLAUDE.md`, `AGENTS.md`, `.cursor/rules`, `.codex/rules`) into NeoHive, and pointing you at the other skills. ~3–5 minutes.
+Invoke the `getting-started` skill. It walks through registering a NeoHive MCP server, setting up auth, migrating any existing project memory (`CLAUDE.md`, `AGENTS.md`, `.cursor/rules`, `.codex/rules`) into NeoHive, and pointing you at the other skills. The plugin does **not** ship a pre-configured MCP server — you register your own gateway through Codex's MCP configuration. ~3–5 minutes.
 
 ### 3. (Optional) Environment overrides
 
@@ -38,7 +38,6 @@ A smart-recall hook equivalent (from the Claude build) is omitted here — the c
 NeoHiveCodex/
 ├── .codex-plugin/
 │   └── plugin.json             # Plugin manifest
-├── .mcp.json                   # HTTP MCP server registration
 ├── skills/
 │   ├── start/SKILL.md
 │   ├── getting-started/SKILL.md

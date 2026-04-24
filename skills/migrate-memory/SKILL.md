@@ -81,7 +81,7 @@ For each candidate, assign:
 
 ## Phase 4 — Pick a target hive
 
-Call `list_hives`. Report the list with descriptions. Ask the user which hive should receive these memories. Recommend the hive whose description best matches the project (e.g. a hive with "securisource" in its description for a securisource repo).
+Call `list_hives`. Report the list with descriptions. Ask the user which hive should receive these memories. Recommend the hive whose description best matches the project (e.g. a hive whose description names the repo's primary language or domain).
 
 If only one hive exists, skip the question: "Using the only available hive: `<name>`."
 
