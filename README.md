@@ -10,7 +10,7 @@ Follow your Codex plugin install flow for GitHub sources pointing at `NeoHiveAi/
 
 ### 2. Run the guided setup
 
-Invoke the `getting-started` skill. It walks through verifying the MCP server, setting up auth, migrating any existing project memory (`CLAUDE.md`, `AGENTS.md`, `.cursor/rules`, `.codex/rules`) into NeoHive, and pointing you at the other skills. ~3–5 minutes.
+Invoke the `getting-started` skill. It walks through verifying the MCP server, setting up auth, generating a project-specific topology block in your `AGENTS.md`, migrating any existing project memory (`CLAUDE.md`, `AGENTS.md`, `.cursor/rules`, `.codex/rules`) into NeoHive, and pointing you at the other skills. ~3–5 minutes.
 
 ### 3. (Optional) Environment overrides
 
@@ -24,8 +24,9 @@ export NEOHIVE_TOKEN="your-token-here"
 
 | Name | Purpose |
 |------|---------|
-| `getting-started` | First-run setup orchestrator: verifies MCP, sets up auth, migrates memory, surfaces next steps. |
+| `getting-started` | First-run setup orchestrator: verifies MCP, sets up auth, generates topology block, migrates memory, surfaces next steps. |
 | `start` | Pre-load relevant NeoHive memories for the current task via `memory_context`. |
+| `generate-agents-md` | Survey connected hives and write a project-specific topology block into `./AGENTS.md` (hive table, write-routing, session-start non-negotiables). Re-runnable when hives change. |
 | `migrate-memory` | Scan local memory files (`CLAUDE.md`, `AGENTS.md`, `.cursor/rules`, `.codex/rules`) and migrate project-scoped entries into NeoHive. |
 | `generate-docs` | Design a documentation gold standard through a guided dialogue, save to NeoHive, validate with 2–3 sample pages, then hand off to a fresh session. |
 | `revise-vector-memory` | End-of-session extraction of learnings, corrections, and insights into NeoHive. |
@@ -42,6 +43,7 @@ NeoHiveCodex/
 ├── skills/
 │   ├── start/SKILL.md
 │   ├── getting-started/SKILL.md
+│   ├── generate-agents-md/SKILL.md
 │   ├── migrate-memory/SKILL.md
 │   ├── generate-docs/SKILL.md
 │   └── revise-vector-memory/SKILL.md
