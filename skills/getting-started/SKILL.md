@@ -1,6 +1,6 @@
 ---
 name: getting-started
-description: First-run setup for NeoHive. Walks a new user through verifying the MCP server, setting up auth, migrating existing project memory, and enabling optional helpers. Invoke this once per machine after installing the neohive plugin.
+description: First-run setup for NeoHive. Walks a new user through verifying the MCP server, setting up auth, generating a project-specific topology block in AGENTS.md, and migrating existing project memory. Invoke this once per machine after installing the neohive plugin.
 ---
 
 # Getting Started with NeoHive
@@ -124,16 +124,21 @@ If `list_hives` succeeded, skip this phase. Otherwise ask: "Does your NeoHive se
 - **No — it's open**: continue.
 - **I'm not sure**: offer to try the call without a token first. If it fails, come back here.
 
-## Phase 3 — Generate project topology in AGENTS.md
+## Phase 3 — Generate project AGENTS.md topology
+
+Now that the MCP is reachable, generate a project-specific topology block in `./AGENTS.md`. This is what makes the model reliable about *which* hive to query and *where* new writes should land — without it, NeoHive tool calls run blind because the model has no project-level context for the hive layout.
 
 Ask the user:
 
-> Want me to generate a project-specific NeoHive topology block in your `AGENTS.md`? It surveys your connected hives, infers what each one holds, and tells future Codex sessions where to write new memories.
+> Generate a project topology block in ./AGENTS.md? (Recommended — improves tool-calling accuracy for everyone on this repo.)
 
-- **Yes** (recommended) — invoke the `generate-codex-md` skill
-- **Skip — I'll generate it later**
+- **Yes** (recommended) — invoke the `generate-agents-md` skill
+- **Yes, but let me review the table before writing** — invoke `generate-agents-md` (it has its own review gates)
+- **Skip — I'll run generate-agents-md later**
 
-Wait for the skill to complete. Report what was written. Then continue.
+If yes, invoke the `generate-agents-md` skill. The sub-skill handles its own confirmation gates (synthesis review + diff review), so this phase just waits for it to return. When it returns, report: "Topology block written to ./AGENTS.md (N hives mapped)."
+
+If skip, tell the user they can run `generate-agents-md` anytime to add the block, and continue.
 
 ## Phase 4 — Migrate existing project memory
 
@@ -166,7 +171,7 @@ Print a checklist. Use ✓ / ○ prefixes:
 ```
 ✓ MCP server reachable (N hives: ...)
 ✓ Auth token configured
-✓ AGENTS.md topology block written
+✓ Project topology block in ./AGENTS.md (N hives mapped)
 ✓ N project memories migrated
 ○ Smart-recall helper (skipped)
 ```
@@ -177,7 +182,7 @@ Then this exact closing block:
 >   1. At the start of a new session, invoke `load-context` with a short description of what you're working on. That pre-loads relevant memory.
 >   2. At the end of a session, invoke `capture-session-learnings` so new insights get captured.
 >
-> When docs feel stale, try `design-codebase-docs`. When you add/remove hives, re-run `generate-codex-md`. Rerun `getting-started` anytime to revisit these steps.
+> When docs feel stale, try `design-codebase-docs`. When you add/remove hives, re-run `generate-agents-md`. Rerun `getting-started` anytime to revisit these steps.
 
 ## Important rules
 

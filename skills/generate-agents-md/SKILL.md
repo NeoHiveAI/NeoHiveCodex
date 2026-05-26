@@ -1,13 +1,11 @@
 ---
-name: generate-codex-md
-description: Generate a project-specific NeoHive topology block in ./AGENTS.md by surveying connected hives (list_hives + memory_stats + sampled memory_recall probes). Runs as Phase 3 of getting-started, and is also user-invocable for re-runs when hives change. Use when the user says "generate my NeoHive AGENTS.md", "regenerate the topology", "re-survey my hives", or after adding/removing/renaming hives.
+name: generate-agents-md
+description: Generate a project-specific NeoHive topology block in ./AGENTS.md by surveying connected hives (list_hives + memory_stats + sampled memory_recall probes). Runs as Phase 3 of the getting-started skill, and is also invocable on its own for re-runs when hives change. Use when the user says "generate my NeoHive AGENTS.md", "regenerate the topology", "re-survey my hives", or after adding/removing/renaming hives.
 ---
 
 # Generate Project-Specific NeoHive AGENTS.md Block
 
-You are surveying the user's connected NeoHive hives and writing a **project-specific** topology block into `./AGENTS.md`. This block tells Codex — at session start, before `memory_context` is even called — which hives exist, what each one holds, and where new writes should land. Without this block, the generic rules in `rules/neohive.md` are running blind.
-
-> **Why `AGENTS.md`?** Codex reads `AGENTS.md` as its project-instructions file the same way Claude reads `CLAUDE.md`. If the user's project uses a different filename for Codex project instructions (e.g. `.codex/instructions.md`), ask once at Stage A and substitute everywhere below.
+You are surveying the user's connected NeoHive hives and writing a **project-specific** topology block into `./AGENTS.md`. This block tells the model — at session start, before `memory_context` is even called — which hives exist, what each one holds, and where new writes should land. Without this block, NeoHive tool calls run blind: the model has to guess which hive to query and where to route writes.
 
 **Three non-negotiable rules:**
 
@@ -49,7 +47,7 @@ For each hive, generate 2–3 probe query strings:
 
 | Failure | Response |
 |---|---|
-| `list_hives` returns empty / errors | Abort. Tell the user: "Cannot generate topology — no hives reachable. Confirm Phase 1 of `getting-started` passed before re-running." Do NOT write anything. |
+| `list_hives` returns empty / errors | Abort. Tell the user: "Cannot generate topology — no hives reachable. Confirm Phase 1 of the getting-started skill passed before re-running." Do NOT write anything. |
 | `memory_stats` unavailable | Continue. Mark every hive's `Write to it?` cell `(verify)`. Surface a one-line warning at the Stage B review gate. |
 | `memory_recall` returns nothing for a hive | Re-attempt with the generic fallback probes. If still empty, set `What it holds` to the hive's `description` verbatim and append `(no sampled memories)`. |
 
@@ -72,13 +70,15 @@ Pick the hive with the largest write-safe (`YES`) memory count. Tie-break alphab
 
 ### Stage B review gate
 
-Render the proposed table to the terminal as a markdown table (so the user can read it). Then ask:
+Render the proposed table to the terminal as a markdown table (so the user can read it). Then ask the user:
 
 > Topology table looks right?
-> Options: Looks good — proceed to write / Edit a row / Re-sample with different probes / Cancel
+>
+> - **Looks good — proceed to write** (recommended)
+> - **Edit a row** — name the row + column, accept free-text override, re-render and re-confirm
+> - **Re-sample with different probes** — ask for probe terms, re-run A.3 only, re-synthesize
+> - **Cancel** — exit cleanly, no file writes
 
-`Edit a row` → ask which row + which column → accept free-text override → re-render and re-confirm.
-`Re-sample with different probes` → ask user for probe terms → re-run A.3 only → re-synthesize.
 `Cancel` → exit cleanly. No file writes.
 
 ## Stage C — Write
@@ -90,7 +90,7 @@ If the target file is in a git worktree:
 ```bash
 if git -C "$(dirname ./AGENTS.md)" rev-parse --is-inside-work-tree 2>/dev/null; then
   if [ -n "$(git status --porcelain -- ./AGENTS.md)" ]; then
-    # warn + ask whether to continue or cancel
+    # warn + ask user to confirm or cancel
   fi
 fi
 ```
@@ -112,23 +112,31 @@ Warning text: "`AGENTS.md` has uncommitted changes — recommend committing firs
 1. Compute proposed file content in memory.
 2. Allocate temp file via `mktemp` in `$TMPDIR` (NOT in the project worktree). Register a cleanup trap so the temp file is removed on any exit path including SIGINT.
 3. Run `diff -u AGENTS.md "$tmp"` (treat absent `AGENTS.md` as `/dev/null`); print the unified diff to terminal.
-4. Ask: "Write this block to ./AGENTS.md?"
-   Options: Write / Edit block first / Cancel
-5. `Write` → atomic `mv "$tmp" ./AGENTS.md`. `Edit block first` → spawn `$EDITOR` on `$tmp` → re-show diff → re-confirm. `Cancel` → cleanup trap fires, exit.
+4. Ask the user:
+   > Write this block to ./AGENTS.md?
+   >
+   > - **Write** (recommended)
+   > - **Edit block first** — spawn `$EDITOR` on the temp file, re-show diff, re-confirm
+   > - **Cancel** — cleanup trap fires, exit
+5. `Write` → atomic `mv "$tmp" ./AGENTS.md`.
 
 ## Generated content template
 
 Always wrap in markers. Use these substitution variables; fill them from Stage B output.
 
+The Codex plugin has no plugin-level rules surface, so the generated block is **self-contained** — it inlines the session-start non-negotiables rather than referencing an external rule file.
+
 ```markdown
 <!-- BEGIN neohive-managed v=1 -->
-<!-- Generated by NeoHive generate-codex-md on {{DATE}}. Re-run to refresh. -->
+<!-- Generated by the generate-agents-md skill on {{DATE}}. Re-run to refresh. -->
 
 ## NeoHive Cognitive Memory — Project Topology
 
-Generic NeoHive tool-usage rules are loaded from the plugin's `rules/neohive.md`.
-This block adds the **project-specific** topology and routing that determine
-WHICH hive serves which query, and where new writes should land.
+You have access to a persistent semantic memory system via MCP tools
+(`list_hives`, `memory_context`, `memory_recall`, `memory_store`,
+`memory_forget`, `memory_stats`). This block is the **project-specific**
+topology that tells you which hive serves which query, and where new
+writes should land.
 
 ### Hive Topology
 
@@ -140,12 +148,16 @@ WHICH hive serves which query, and where new writes should land.
 
 **Interpreting `[hive: <uuid>]` in recall results.** {{HIVE_PROVENANCE_GUIDE}}
 
-### Session Start — Non-Negotiable (Project-Specific)
+### Session Start — Non-Negotiable
 
-1. `memory_context` is your FIRST action — see the plugin's `rules/neohive.md`.
-2. Confirm the topology above has not drifted: call `list_hives` once per session.
-   If a hive is added / removed / renamed, re-run `generate-codex-md`.
-3. Follow up with a targeted `memory_recall` for this project's domain. Suggested seeds:
+1. **`memory_context` is your FIRST action in every session.** Call it with a brief
+   description of the task before doing anything else — before reading files, before
+   exploring code, before answering questions. Describe the task in **affirmative form
+   with specific domain terms**, e.g. `"implementing authentication middleware for Express"`
+   not `"what do we know about auth?"`.
+2. **Call `list_hives` once per session** to confirm the topology above has not changed.
+   If a hive is added / removed / renamed, re-run the `generate-agents-md` skill.
+3. **Follow up with a targeted `memory_recall`** for this project's domain. Suggested seeds:
 {{DOMAIN_RECALL_SEEDS}}
 
 ### What Goes Where: Cognitive Memory vs AGENTS.md
@@ -184,7 +196,7 @@ specific reason.** When you do, write one sentence in the memory body explaining
 Print a single line:
 
 ```
-generate-codex-md: 3 hives mapped, default write target: Knowledge,
+generate-agents-md: 3 hives mapped, default write target: Knowledge,
 written to ./AGENTS.md (block lines 42-87, +35 lines vs previous version).
 ```
 
