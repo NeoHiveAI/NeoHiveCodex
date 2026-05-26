@@ -16,7 +16,9 @@ Open with this exact script (do not paraphrase):
 > I'll walk you through setting up NeoHive on this machine. This takes 3–5 minutes and covers:
 >   1. Confirming your NeoHive server is reachable
 >   2. (Optional) Setting up your auth token
->   3. Migrating existing project knowledge into NeoHive
+>   3. Generating a project-specific topology block in your `AGENTS.md`
+>   4. Migrating existing project knowledge into NeoHive
+>   5. (Optional) Enabling the smart-recall helper
 >
 > You can stop at any point by saying "stop" or answering "skip" to a step.
 
@@ -62,7 +64,7 @@ Tell the user:
 >
 > After registering, restart Codex and rerun the `getting-started` skill.
 
-Pause here until the user confirms they've registered it, or say "skip" to jump to Phase 4.
+Pause here until the user confirms they've registered it, or say "skip" to jump to Phase 6.
 
 ### 1c. Verify with `list_hives`
 
@@ -106,7 +108,7 @@ except Exception as e:
 PY
 ```
 
-Then offer the user: "Fix token now", "I'll fix it later and restart Codex", "Skip MCP setup for now". If they skip, jump to Phase 4 with a warning that memory features won't work.
+Then offer the user: "Fix token now", "I'll fix it later and restart Codex", "Skip MCP setup for now". If they skip, jump to Phase 6 with a warning that memory features won't work.
 
 ## Phase 2 — Auth token (only if needed)
 
@@ -122,7 +124,18 @@ If `list_hives` succeeded, skip this phase. Otherwise ask: "Does your NeoHive se
 - **No — it's open**: continue.
 - **I'm not sure**: offer to try the call without a token first. If it fails, come back here.
 
-## Phase 3 — Migrate existing project memory
+## Phase 3 — Generate project topology in AGENTS.md
+
+Ask the user:
+
+> Want me to generate a project-specific NeoHive topology block in your `AGENTS.md`? It surveys your connected hives, infers what each one holds, and tells future Codex sessions where to write new memories.
+
+- **Yes** (recommended) — invoke the `generate-codex-md` skill
+- **Skip — I'll generate it later**
+
+Wait for the skill to complete. Report what was written. Then continue.
+
+## Phase 4 — Migrate existing project memory
 
 Ask the user:
 
@@ -135,27 +148,40 @@ Ask the user:
 
 Wait for the migrate skill to complete. Report: "Migration done — N memories stored." Then continue.
 
-## Phase 4 — Final summary
+## Phase 5 — (Optional) Enable smart-recall helper
+
+Ask the user:
+
+> Want a smarter prompt-rewriting helper? It uses a small model to rewrite each prompt into a good `memory_recall` query before searching, surfacing only the most relevant memories.
+
+- **Yes** (recommended) — invoke the `enable-smart-prompts` skill
+- **Skip — I'll enable later**
+
+If the user opts in, wait for the skill to complete.
+
+## Phase 6 — Final summary
 
 Print a checklist. Use ✓ / ○ prefixes:
 
 ```
 ✓ MCP server reachable (N hives: ...)
 ✓ Auth token configured
+✓ AGENTS.md topology block written
 ✓ N project memories migrated
+○ Smart-recall helper (skipped)
 ```
 
 Then this exact closing block:
 
 > **You're set. Two things to remember:**
->   1. At the start of a new session, invoke the `start` skill with a short description of what you're working on. That pre-loads relevant memory.
->   2. At the end of a session, invoke `revise-vector-memory` so new insights get captured.
+>   1. At the start of a new session, invoke `load-context` with a short description of what you're working on. That pre-loads relevant memory.
+>   2. At the end of a session, invoke `capture-session-learnings` so new insights get captured.
 >
-> When docs feel stale, try `generate-docs`. Rerun `getting-started` anytime to revisit these steps.
+> When docs feel stale, try `design-codebase-docs`. When you add/remove hives, re-run `generate-codex-md`. Rerun `getting-started` anytime to revisit these steps.
 
 ## Important rules
 
-- **Never call `memory_store` directly from this skill.** Delegate to `migrate-memory` or `revise-vector-memory`.
+- **Never call `memory_store` directly from this skill.** Delegate to `migrate-memory` or `capture-session-learnings`.
 - **Never edit the user's shell rc files yourself.** Show the command, let them paste.
-- **If the user says "stop" or "skip" at any phase, stop immediately** and print the Phase 4 summary with what's done so far.
+- **If the user says "stop" or "skip" at any phase, stop immediately** and print the Phase 6 summary with what's done so far.
 - **If any sub-skill fails, surface the error plainly** and offer to skip that phase rather than retrying silently.
