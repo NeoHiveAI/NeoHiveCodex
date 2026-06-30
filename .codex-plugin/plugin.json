@@ -1,6 +1,6 @@
 {
   "name": "neohive",
-  "version": "1.5.0",
-  "description": "NeoHive cognitive memory for OpenAI Codex — MCP server registration, persistent rules for memory tool usage, and skills for session setup (load-context, capture-session-learnings, design-codebase-docs, enable-smart-prompts, generate-agents-md, migrate-memory).",
+  "version": "1.6.0",
+  "description": "NeoHive cognitive memory for OpenAI Codex — MCP server registration plus skills for session setup, local-to-hive memory migration, documentation design, and post-session learning extraction.",
   "skills": "./skills/"
 }
