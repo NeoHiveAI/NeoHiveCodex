@@ -1,5 +1,5 @@
 ---
-version: "1.5.0"
+version: '1.6.1'
 managed_by: neohive-plugin
 ---
 
@@ -47,6 +47,7 @@ Call `list_hives` to see what hives are available. Each hive has a description e
 When no `hive` parameter is specified, reads search across ALL hives using cross-hive RRF fusion — the most relevant results from any hive are returned. You usually want this behavior.
 
 Query formulation matters:
+
 - Write **affirmative statements**, not questions: `"error handling in async batch processing"` not `"How do we handle errors?"`
 - Include **specific domain terms** that would appear in stored knowledge: `"sqlite-vec F32_BLOB column type"` not `"vector database column"`
 - Use the **types parameter** to narrow results: `types: ["directive", "convention"]` for rules, `types: ["error_pattern", "insight"]` for gotchas
@@ -59,6 +60,7 @@ Call `memory_recall` before working on unfamiliar topics or when you need specif
 A `hive` parameter is **required** for writes. Use `list_hives` to find the right hive.
 
 Call `memory_store` when:
+
 - The user corrects you or says "no, we do X instead"
 - A new convention or rule is established
 - You discover a non-obvious gotcha or insight
