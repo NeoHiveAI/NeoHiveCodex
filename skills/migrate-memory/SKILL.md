@@ -135,14 +135,14 @@ For each approved candidate:
 
 1. Call `memory_recall` with a query derived from the candidate content, `limit=3`.
 2. Read results:
-   - **Strong match (score > 0.85 and semantically identical):** skip, report "already known".
-   - **Weak/partial match:** store anyway — new semantic angle.
-   - **No match:** store.
+    - **Strong match (score > 0.85 and semantically identical):** skip, report "already known".
+    - **Weak/partial match:** store anyway — new semantic angle.
+    - **No match:** store.
 3. Call `memory_store` with:
-   - `hive`: the chosen hive
-   - `content`: the candidate content (full, not truncated)
-   - `type`, `tags`, `importance` from Phase 3
-   - `metadata`: `{"source": "migrate-memory", "origin_file": "<path>", "origin_line": <line>}`
+    - `hive`: the chosen hive
+    - `content`: the candidate content (full, not truncated)
+    - `type`, `tags`, `importance` from Phase 3
+    - `metadata`: `{"source": "migrate-memory", "origin_file": "<path>", "origin_line": <line>}`
 
 Do writes sequentially. If any write fails, report the error and ask whether to continue with remaining candidates or abort.
 

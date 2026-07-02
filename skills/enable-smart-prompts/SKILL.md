@@ -37,6 +37,7 @@ Call `list_hives`. Ask which hive the helper should search on every prompt. Defa
 ### 2. Which model drives the query rewriter
 
 Options:
+
 - `claude-haiku-4-5` (Recommended) — fast + cheap
 - `claude-sonnet-4-6` — more accurate, slower, ~10x cost
 - `claude-opus-4-7` — overkill, only for very noisy hives
@@ -44,6 +45,7 @@ Options:
 ### 3. Trigger policy
 
 Options:
+
 - (Recommended) Every prompt longer than 10 chars — skips short clarifications
 - Only when prompt contains a keyword the user picks
 - Every prompt — no filtering
@@ -54,6 +56,7 @@ If "keyword": ask for the keyword(s).
 ### 4. Install location
 
 Options:
+
 - (Recommended) `~/.codex/hooks/neohive-smart-recall.sh` — personal, all projects
 - `./.codex/hooks/neohive-smart-recall.sh` — this project only
 - Just show me the script — I'll place it myself
@@ -61,6 +64,7 @@ Options:
 ### 5. Disable-flag name
 
 Options:
+
 - (Recommended) `NEOHIVE_SMART_DISABLED`
 - `NEOHIVE_HOOK_DISABLED`
 - Custom — user types
@@ -80,6 +84,7 @@ Generated helper with:
 
 Ask: "Install this helper now?"
 Options:
+
 - (Recommended) Yes, write it
 - No — I want to tweak the script first
 
@@ -103,10 +108,13 @@ This is the most platform-dependent step. Tell the user:
 > - **If your Codex distribution supports a `UserPromptSubmit`-style hook in `~/.codex/config.json`**, add an entry pointing at `<install-path>`.
 > - **If not**, call the script manually before sending a prompt:
 >
->       export NEOHIVE_SMART_RUN=1
->       echo "your prompt here" | <install-path>
+>     ```bash
+>     export NEOHIVE_SMART_RUN=1
+>     echo "your prompt here" | <install-path>
+>     ```
 >
->   and paste the output into your Codex session as context.
+>     and paste the output into your Codex session as context.
+>
 > - **Watch the [NeoHive Codex plugin docs](https://github.com/NeoHiveAi/NeoHiveCodex)** for updates as Codex's hook surface matures — this skill will be updated to register the hook automatically once a stable API exists.
 
 ## Phase 5 — Verification
