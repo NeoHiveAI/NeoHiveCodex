@@ -1,0 +1,15 @@
+{
+  "name": "neohive-codex",
+  "interface": {
+    "displayName": "NeoHive"
+  },
+  "plugins": [
+    {
+      "name": "neohive",
+      "source": {
+        "source": "local",
+        "path": "./plugins/neohive"
+      }
+    }
+  ]
+}
