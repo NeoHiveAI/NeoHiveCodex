@@ -28,16 +28,16 @@ export NEOHIVE_MCP_HINTS=0
 
 ## Available Components
 
-| Type | Name | Purpose |
-|------|------|---------|
-| Rules | `rules/neohive.md` | Persistent tool-usage instructions: when to call `memory_context` / `memory_recall` / `memory_store`, recall-first guidance for codebase exploration, prose-encoded guidance for delegated exploration (the Codex analogue of Claude's `explore-neohive` subagent + PreToolUse hook). |
-| Skill | `getting-started` | First-run setup orchestrator: verifies MCP, sets up auth, generates topology, migrates memory, surfaces next steps. |
-| Skill | `load-context` | Pre-load relevant NeoHive memories for the current task via `memory_context`. Run at the start of every session. |
-| Skill | `generate-agents-md` | Survey connected hives and write a project-specific topology block into `./AGENTS.md` (hive table, write-routing, session-start non-negotiables). Re-runnable when hives change. |
-| Skill | `migrate-memory` | Scan local memory files (`CLAUDE.md`, `AGENTS.md`, `.cursor/rules`, `.codex/rules`) and migrate project-scoped entries into NeoHive. |
-| Skill | `design-codebase-docs` | Design a documentation gold standard through guided dialogue, save to NeoHive, validate with 2–3 sample pages, then hand off to a fresh session. |
-| Skill | `enable-smart-prompts` | Generate a tailored prompt-rewriting helper that rewrites prompts with a small model before querying NeoHive. Codex hook-wiring is platform-dependent — see the skill for current guidance. |
-| Skill | `capture-session-learnings` | End-of-session extraction of learnings, corrections, and insights into NeoHive. |
+| Type  | Name                        | Purpose                                                                                                                                                                                                                                                                               |
+| ----- | --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Rules | `rules/neohive.md`          | Persistent tool-usage instructions: when to call `memory_context` / `memory_recall` / `memory_store`, recall-first guidance for codebase exploration, prose-encoded guidance for delegated exploration (the Codex analogue of Claude's `explore-neohive` subagent + PreToolUse hook). |
+| Skill | `getting-started`           | First-run setup orchestrator: verifies MCP, sets up auth, generates topology, migrates memory, surfaces next steps.                                                                                                                                                                   |
+| Skill | `load-context`              | Pre-load relevant NeoHive memories for the current task via `memory_context`. Run at the start of every session.                                                                                                                                                                      |
+| Skill | `generate-agents-md`        | Survey connected hives and write a project-specific topology block into `./AGENTS.md` (hive table, write-routing, session-start non-negotiables). Re-runnable when hives change.                                                                                                      |
+| Skill | `migrate-memory`            | Scan local memory files (`CLAUDE.md`, `AGENTS.md`, `.cursor/rules`, `.codex/rules`) and migrate project-scoped entries into NeoHive.                                                                                                                                                  |
+| Skill | `design-codebase-docs`      | Design a documentation gold standard through guided dialogue, save to NeoHive, validate with 2–3 sample pages, then hand off to a fresh session.                                                                                                                                      |
+| Skill | `enable-smart-prompts`      | Generate a tailored prompt-rewriting helper that rewrites prompts with a small model before querying NeoHive. Codex hook-wiring is platform-dependent — see the skill for current guidance.                                                                                           |
+| Skill | `capture-session-learnings` | End-of-session extraction of learnings, corrections, and insights into NeoHive.                                                                                                                                                                                                       |
 
 The slugs `start`, `revise-vector-memory`, and `generate-docs` remain as deprecated aliases that redirect to the new names; they will be removed in a future minor release.
 
