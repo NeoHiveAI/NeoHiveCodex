@@ -17,59 +17,16 @@ Open with this exact script (do not paraphrase):
 >
 > 1. Confirming your NeoHive server is reachable
 > 2. (Optional) Setting up your auth token
-> 3. Generating a project-specific topology block in your `AGENTS.md`
+> 3. Generating a project-specific topology block in your AGENTS.md
 > 4. Migrating existing project knowledge into NeoHive
-> 5. (Optional) Enabling the smart-recall helper
 >
 > You can stop at any point by saying "stop" or answering "skip" to a step.
 
 Wait for acknowledgement (any affirmative reply, or just continue if they say nothing).
 
-## Phase 1 — Register and verify the MCP server
+## Phase 1 — Verify MCP reachability
 
-The plugin ships **without** a pre-configured MCP server, so the first task is registering your NeoHive gateway with Codex.
-
-### 1a. Check whether a NeoHive MCP is already registered
-
-Run this to detect any `*neohive*`-keyed MCP server in the user's Codex config:
-
-```bash
-python3 - <<'PY' 2>/dev/null || echo "no neohive MCP found"
-import json, os, glob
-found = []
-candidates = [os.path.expanduser("~/.codex/config.json")] + glob.glob(os.path.expanduser("~/.codex/mcp*.json"))
-for path in candidates:
-    try:
-        with open(path) as f: data = json.load(f)
-    except Exception: continue
-    servers = data.get("mcpServers", data) if isinstance(data, dict) else {}
-    if not isinstance(servers, dict): continue
-    for k, v in servers.items():
-        if "neohive" in k.lower() and isinstance(v, dict):
-            found.append(f"{path}: {k} -> {v.get('url', '<no url>')}")
-for line in found or ["no neohive MCP found"]:
-    print(line)
-PY
-```
-
-- **If one is found:** call `list_hives` and interpret per the table below.
-- **If none is found:** guide the user to register one (see 1b), then rerun `list_hives`.
-
-### 1b. Registering a server (only if none found)
-
-Tell the user:
-
-> The NeoHive plugin doesn't bundle a default MCP server — you register yours explicitly through Codex's MCP configuration.
->
-> Name the server with a key containing `neohive` (e.g. `neohive`) and point it at your gateway URL (e.g. `https://your-neohive-host/hiveminds/<hive-id>/mcp`). See the [Codex MCP docs](https://developers.openai.com/codex/plugins/build) for the exact configuration path on your platform.
->
-> After registering, restart Codex and rerun the `getting-started` skill.
-
-Pause here until the user confirms they've registered it, or say "skip" to jump to Phase 6.
-
-### 1c. Verify with `list_hives`
-
-Once a server is registered, call `list_hives` and interpret:
+Call `list_hives` immediately. Interpret the outcome:
 
 | Outcome                  | What to tell the user                                                                                                                                         |
 | ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -82,34 +39,15 @@ Once a server is registered, call `list_hives` and interpret:
 Run these checks and report results in a compact block:
 
 ```bash
-# 1. Is NEOHIVE_TOKEN set?
+# 1. Is .mcp.json present in the plugin install?
+ls ~/.codex/plugins/cache/*/neohive/*/.mcp.json 2>&1 || echo "missing"
+# 2. Is NEOHIVE_TOKEN set?
 [ -n "${NEOHIVE_TOKEN:-}" ] && echo "token set" || echo "token not set"
-# 2. Can we reach the registered server?
-python3 - <<'PY' 2>/dev/null
-import json, os, glob, urllib.request, ssl
-url = None
-for path in [os.path.expanduser("~/.codex/config.json")] + glob.glob(os.path.expanduser("~/.codex/mcp*.json")):
-    try:
-        with open(path) as f: data = json.load(f)
-    except Exception: continue
-    servers = data.get("mcpServers", data) if isinstance(data, dict) else {}
-    if not isinstance(servers, dict): continue
-    for k, v in servers.items():
-        if "neohive" in k.lower() and isinstance(v, dict) and v.get("url"):
-            url = v["url"]; break
-    if url: break
-if not url:
-    print("no neohive URL registered — rerun 1b"); raise SystemExit
-try:
-    ctx = ssl.create_default_context(); ctx.check_hostname = False; ctx.verify_mode = ssl.CERT_NONE
-    with urllib.request.urlopen(urllib.request.Request(url, method="GET"), timeout=5, context=ctx) as r:
-        print(f"HTTP {r.status} from {url}")
-except Exception as e:
-    print(f"unreachable: {type(e).__name__}: {e}")
-PY
+# 3. Can we reach the server?
+grep -oE 'https?://[^"]+' ~/.codex/plugins/cache/*/neohive/*/.mcp.json 2>/dev/null | head -1 | xargs -I{} curl -sS -o /dev/null -w "HTTP %{http_code}\n" --max-time 5 "{}" 2>&1 || true
 ```
 
-Then offer the user: "Fix token now", "I'll fix it later and restart Codex", "Skip MCP setup for now". If they skip, jump to Phase 6 with a warning that memory features won't work.
+Then offer the user: "Fix token now", "I'll fix it later and restart Codex", "Skip MCP setup for now". If they skip, jump to Phase 5 with a warning that memory features won't work.
 
 ## Phase 2 — Auth token (only if needed)
 
@@ -156,18 +94,7 @@ Ask the user:
 
 Wait for the migrate skill to complete. Report: "Migration done — N memories stored." Then continue.
 
-## Phase 5 — (Optional) Enable smart-recall helper
-
-Ask the user:
-
-> Want a smarter prompt-rewriting helper? It uses a small model to rewrite each prompt into a good `memory_recall` query before searching, surfacing only the most relevant memories.
-
-- **Yes** (recommended) — invoke the `enable-smart-prompts` skill
-- **Skip — I'll enable later**
-
-If the user opts in, wait for the skill to complete.
-
-## Phase 6 — Final summary
+## Phase 5 — Final summary
 
 Print a checklist. Use ✓ / ○ prefixes:
 
@@ -176,21 +103,20 @@ Print a checklist. Use ✓ / ○ prefixes:
 ✓ Auth token configured
 ✓ Project topology block in ./AGENTS.md (N hives mapped)
 ✓ N project memories migrated
-○ Smart-recall helper (skipped)
 ```
 
 Then this exact closing block:
 
 > **You're set. Two things to remember:**
 >
-> 1. At the start of a new session, invoke `load-context` with a short description of what you're working on. That pre-loads relevant memory.
-> 2. At the end of a session, invoke `capture-session-learnings` so new insights get captured.
+> 1. At the start of a new session, invoke the `start` skill with a short description of what you're working on. That pre-loads relevant memory.
+> 2. At the end of a session, invoke `revise-vector-memory` so new insights get captured.
 >
-> When docs feel stale, try `design-codebase-docs`. When you add/remove hives, re-run `generate-agents-md`. Rerun `getting-started` anytime to revisit these steps.
+> When docs feel stale, try `generate-docs`. Rerun `getting-started` anytime to revisit these steps.
 
 ## Important rules
 
-- **Never call `memory_store` directly from this skill.** Delegate to `migrate-memory` or `capture-session-learnings`.
+- **Never call `memory_store` directly from this skill.** Delegate to `migrate-memory` or `revise-vector-memory`.
 - **Never edit the user's shell rc files yourself.** Show the command, let them paste.
-- **If the user says "stop" or "skip" at any phase, stop immediately** and print the Phase 6 summary with what's done so far.
+- **If the user says "stop" or "skip" at any phase, stop immediately** and print the Phase 5 summary with what's done so far.
 - **If any sub-skill fails, surface the error plainly** and offer to skip that phase rather than retrying silently.
