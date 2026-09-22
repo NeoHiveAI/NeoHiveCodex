@@ -1,11 +1,11 @@
 ---
-version: '1.6.3'
+version: '1.7.0'
 managed_by: neohive-plugin
 ---
 
 # NeoHive Cognitive Memory
 
-You have access to a persistent semantic memory system via MCP tools. The hives connected to this session may contain durable team knowledge **and indexed source code** (typically embedded with a code-tuned model such as `jina-embeddings-v2-base-code`). Treat the hives as a first-class navigation surface, not a side-channel. **Use them actively, not passively.**
+You have access to a persistent semantic memory system via MCP tools. The Indexes connected to this session may contain durable team knowledge **and indexed source code** (typically embedded with a code-tuned model such as `jina-embeddings-v2-base-code`). Treat the Indexes as a first-class navigation surface, not a side-channel. **Use them actively, not passively.**
 
 ## Session Start — ALWAYS Do This First
 
@@ -18,11 +18,11 @@ If the task involves a specific domain (e.g., starlang rules, dashboard tiles), 
 
 ## Codebase Exploration — Prefer `memory_recall` Over File Traversal
 
-If a hive contains the codebase you're working in (the `list_hives` output names a `repo`-typed hive, or `memory_context` returned indexed code snippets), call `memory_recall` BEFORE doing broad file exploration with shell `find`/`grep`/`rg` or reading files speculatively. The indexed embedding is almost always faster and uses less context than walking the tree:
+If an Index contains the codebase you're working in (the `list_indexes` output names a `repo`-typed Index, or `memory_context` returned indexed code snippets), call `memory_recall` BEFORE doing broad file exploration with shell `find`/`grep`/`rg` or reading files speculatively. The indexed embedding is almost always faster and uses less context than walking the tree:
 
 - Frame the query as what you'd say to a teammate: `"how does the sync engine handle git clone credentials"` not `"find git clone code"`.
 - Use `memory_recall` to locate the relevant files, then read the precise lines you need to edit.
-- Fall back to filesystem search only when you need an exact symbol that semantic search misses, or for files outside the index (e.g. brand-new files in your working tree).
+- Fall back to filesystem search only when you need an exact symbol that semantic search misses, or for files outside the Index (e.g. brand-new files in your working tree).
 
 This applies for the entire session, not just at start: every time you'd reach for "let me search the codebase for X," try `memory_recall` first. The MCP server itself surfaces a self-reinforcing hint on every `memory_recall` / `memory_context` response (result count, top score, latency); when you see that hint, take it as a cue to keep using semantic recall instead of switching to filesystem tools. To suppress that in-response hint, set `NEOHIVE_MCP_HINTS=0` in the environment.
 
@@ -32,19 +32,19 @@ The Claude build of this plugin ships a `PreToolUse` hook that nudges the agent 
 
 ## Delegating Exploration — Prefer Semantic Recall Inside Subagents
 
-The Claude build ships a dedicated `explore-neohive` subagent whose tool allowlist and system prompt force semantic recall first. Codex does not yet have first-class subagents with per-agent tool allowlists, but the same principle applies: **whenever you delegate codebase or knowledge exploration to another agent, instance, or task runner, tell it to call `memory_recall` (or `memory_context` if it's starting fresh) before doing any filesystem traversal**, and to use filesystem tools only for precise line numbers or files the index doesn't cover.
+The Claude build ships a dedicated `explore-neohive` subagent whose tool allowlist and system prompt force semantic recall first. Codex does not yet have first-class subagents with per-agent tool allowlists, but the same principle applies: **whenever you delegate codebase or knowledge exploration to another agent, instance, or task runner, tell it to call `memory_recall` (or `memory_context` if it's starting fresh) before doing any filesystem traversal**, and to use filesystem tools only for precise line numbers or files the Index doesn't cover.
 
 When you do delegate, include this directive in the delegated prompt:
 
-> "This project has a NeoHive instance with indexed code/knowledge. Before file exploration, call `memory_recall` (or `memory_context` if you're starting fresh) with an affirmative description of what you're looking for. Use filesystem search only for precise line numbers or files the index doesn't cover."
+> "This project has a NeoHive instance with indexed code/knowledge. Before file exploration, call `memory_recall` (or `memory_context` if you're starting fresh) with an affirmative description of what you're looking for. Use filesystem search only for precise line numbers or files the Index doesn't cover."
 
-## Discovering Hives
+## Discovering Indexes
 
-Call `list_hives` to see what hives are available. Each hive has a description explaining what it stores (code, knowledge, rules, etc.). Use this to decide which hive to target for writes.
+Call `list_indexes` to see what Indexes are available. Each Index has a description explaining what it stores (code, knowledge, rules, etc.). Use this to decide which Index to target for writes.
 
 ## Reading — memory_recall & memory_context
 
-When no `hive` parameter is specified, reads search across ALL hives using cross-hive RRF fusion — the most relevant results from any hive are returned. You usually want this behavior.
+When no `index` parameter is specified, reads search across ALL indexes using cross-index RRF fusion — the most relevant results from any Index are returned. You usually want this behavior.
 
 Query formulation matters:
 
@@ -57,7 +57,7 @@ Call `memory_recall` before working on unfamiliar topics or when you need specif
 
 ## Writing — memory_store
 
-A `hive` parameter is **required** for writes. Use `list_hives` to find the right hive.
+A `index` parameter is **required** for writes. Use `list_indexes` to find the right index.
 
 Call `memory_store` when:
 
@@ -81,9 +81,9 @@ The plugin ships these skills. Suggest them when the user's request matches:
 
 - `getting-started` — first-run setup (verify MCP, configure auth, generate topology block, migrate memory, enable helpers). Run once per machine.
 - `load-context` — pre-load relevant memory for the current task via `memory_context`. Run at the start of every session.
-- `generate-codex-md` — survey connected hives and write a project-specific topology block into `./AGENTS.md`. Re-run when hives are added, removed, or renamed.
+- `generate-codex-md` — survey connected Indexes and write a project-specific topology block into `./AGENTS.md`. Re-run when Indexes are added, removed, or renamed.
 - `capture-session-learnings` — end-of-session extraction of corrections, conventions, decisions, and insights into NeoHive.
-- `migrate-memory` — scan local `AGENTS.md` / `CLAUDE.md` / `.codex/rules` / `.cursor/rules` and import project-scoped entries into a hive.
+- `migrate-memory` — scan local `AGENTS.md` / `CLAUDE.md` / `.codex/rules` / `.cursor/rules` and import project-scoped entries into an index.
 - `design-codebase-docs` — Socratic design of a documentation standard, save to NeoHive, validate with sample pages.
 - `enable-smart-prompts` — install a smarter prompt-rewriting helper that rewrites prompts with a small model before querying NeoHive (where Codex's hook surface allows).
 

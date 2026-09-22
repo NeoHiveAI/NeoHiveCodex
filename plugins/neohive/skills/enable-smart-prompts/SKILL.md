@@ -7,7 +7,7 @@ description: Use when the user says "make NeoHive smarter", "rewrite my prompts 
 
 You help the user install a customized prompt-rewriting helper that intercepts their prompt, uses a small model to formulate a good NeoHive query, calls `memory_recall`, and surfaces the most relevant results.
 
-This is a **dynamic setup** — every user has a different hive layout, shell, API key location, and tolerance for latency. You walk them through each choice with a strong recommended default, then write the script.
+This is a **dynamic setup** — every user has a different Index layout, shell, API key location, and tolerance for latency. You walk them through each choice with a strong recommended default, then write the script.
 
 > ⚠️ Codex platform note: Codex does not currently document a stable `UserPromptSubmit`-equivalent hook the way Claude Code does. The generated script is installed as a standalone tool. Wiring it into the prompt path depends on your Codex distribution — instructions are in Phase 4.
 
@@ -30,9 +30,9 @@ If `claude-cli` or `python3` is missing, stop and tell the user to install them.
 
 Ask these in sequence, one at a time:
 
-### 1. Which hive to target
+### 1. Which Index to target
 
-Call `list_hives`. Ask which hive the helper should search on every prompt. Default: all hives (cross-hive RRF), which calls `memory_recall` without a `hive` param.
+Call `list_indexes`. Ask which index the helper should search on every prompt. Default: all indexes (cross-index RRF), which calls `memory_recall` without a `index` param.
 
 ### 2. Which model drives the query rewriter
 
@@ -40,7 +40,7 @@ Options:
 
 - `claude-haiku-4-5` (Recommended) — fast + cheap
 - `claude-sonnet-4-6` — more accurate, slower, ~10x cost
-- `claude-opus-4-7` — overkill, only for very noisy hives
+- `claude-opus-4-7` — overkill, only for very noisy Indexes
 
 ### 3. Trigger policy
 
@@ -75,7 +75,7 @@ Build the script from the template at `${CODEX_PLUGIN_ROOT}/skills/enable-smart-
 
 ```
 Generated helper with:
-  • Hive:          <hive-or-all>
+  • Index:          <index-or-all>
   • Model:         <model>
   • Trigger:       <policy>
   • Install path:  <path>
@@ -134,6 +134,6 @@ Tell the user:
 
 - **Never overwrite an existing helper at the target path without confirmation.** If the file exists, show its contents and ask whether to replace.
 - **Never put the API key in the generated script.** The script reads `$ANTHROPIC_API_KEY` at runtime.
-- **Never hardcode the hive UUID in the script.** It discovers the MCP URL the same way the standard plugin does (via Codex MCP config files in `~/.codex/`).
+- **Never hardcode the Index UUID in the script.** It discovers the MCP URL the same way the standard plugin does (via Codex MCP config files in `~/.codex/`).
 - **Always set a `--max-time` on every `curl` and `claude -p` call.** A slow helper blocks every prompt.
 - **Gracefully exit 0 on any failure.** A broken helper must never block the user's prompt from reaching Codex.

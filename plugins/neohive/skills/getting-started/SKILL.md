@@ -52,8 +52,8 @@ for line in found or ["no neohive MCP found"]:
 PY
 ```
 
-- **If one is found:** call `list_hives` and interpret per the table below.
-- **If none is found:** guide the user to register one (see 1b), then rerun `list_hives`.
+- **If one is found:** call `list_indexes` and interpret per the table below.
+- **If none is found:** guide the user to register one (see 1b), then rerun `list_indexes`.
 
 ### 1b. Registering a server (only if none found)
 
@@ -61,21 +61,21 @@ Tell the user:
 
 > The NeoHive plugin doesn't bundle a default MCP server — you register yours explicitly through Codex's MCP configuration.
 >
-> Name the server with a key containing `neohive` (e.g. `neohive`) and point it at your gateway URL (e.g. `https://your-neohive-host/hiveminds/<hive-id>/mcp`). See the [Codex MCP docs](https://developers.openai.com/codex/plugins/build) for the exact configuration path on your platform.
+> Name the server with a key containing `neohive` (e.g. `neohive`) and point it at your gateway URL (e.g. `https://your-neohive-host/hives/<hive-id>/mcp`). See the [Codex MCP docs](https://developers.openai.com/codex/plugins/build) for the exact configuration path on your platform.
 >
 > After registering, restart Codex and rerun the `getting-started` skill.
 
 Pause here until the user confirms they've registered it, or say "skip" to jump to Phase 6.
 
-### 1c. Verify with `list_hives`
+### 1c. Verify with `list_indexes`
 
-Once a server is registered, call `list_hives` and interpret:
+Once a server is registered, call `list_indexes` and interpret:
 
-| Outcome                  | What to tell the user                                                                                                                                         |
-| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Returns hives            | "Connected. I can see N hives: X, Y, Z." Proceed to Phase 2.                                                                                                  |
-| Empty list               | "Server is reachable but reports no hives. Confirm with your admin — without at least one hive, NeoHive has nowhere to store memories." Pause for user input. |
-| Tool unavailable / error | "I can't reach the NeoHive MCP server." Run the diagnostics below.                                                                                            |
+| Outcome                  | What to tell the user                                                                                                                                            |
+| ------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Returns Indexes          | "Connected. I can see N Indexes: X, Y, Z." Proceed to Phase 2.                                                                                                   |
+| Empty list               | "Server is reachable but reports no indexes. Confirm with your admin — without at least one Index, NeoHive has nowhere to store memories." Pause for user input. |
+| Tool unavailable / error | "I can't reach the NeoHive MCP server." Run the diagnostics below.                                                                                               |
 
 ### Diagnostics if unreachable
 
@@ -113,7 +113,7 @@ Then offer the user: "Fix token now", "I'll fix it later and restart Codex", "Sk
 
 ## Phase 2 — Auth token (only if needed)
 
-If `list_hives` succeeded, skip this phase. Otherwise ask: "Does your NeoHive server require a bearer token?"
+If `list_indexes` succeeded, skip this phase. Otherwise ask: "Does your NeoHive server require a bearer token?"
 
 - **Yes — I have one** (recommended): show:
     > Export it before launching Codex:
@@ -129,7 +129,7 @@ If `list_hives` succeeded, skip this phase. Otherwise ask: "Does your NeoHive se
 
 ## Phase 3 — Generate project AGENTS.md topology
 
-Now that the MCP is reachable, generate a project-specific topology block in `./AGENTS.md`. This is what makes the model reliable about _which_ hive to query and _where_ new writes should land — without it, NeoHive tool calls run blind because the model has no project-level context for the hive layout.
+Now that the MCP is reachable, generate a project-specific topology block in `./AGENTS.md`. This is what makes the model reliable about _which_ Index to query and _where_ new writes should land — without it, NeoHive tool calls run blind because the model has no project-level context for the Index layout.
 
 Ask the user:
 
@@ -139,7 +139,7 @@ Ask the user:
 - **Yes, but let me review the table before writing** — invoke `generate-agents-md` (it has its own review gates)
 - **Skip — I'll run generate-agents-md later**
 
-If yes, invoke the `generate-agents-md` skill. The sub-skill handles its own confirmation gates (synthesis review + diff review), so this phase just waits for it to return. When it returns, report: "Topology block written to ./AGENTS.md (N hives mapped)."
+If yes, invoke the `generate-agents-md` skill. The sub-skill handles its own confirmation gates (synthesis review + diff review), so this phase just waits for it to return. When it returns, report: "Topology block written to ./AGENTS.md (N Indexes mapped)."
 
 If skip, tell the user they can run `generate-agents-md` anytime to add the block, and continue.
 
@@ -172,9 +172,9 @@ If the user opts in, wait for the skill to complete.
 Print a checklist. Use ✓ / ○ prefixes:
 
 ```
-✓ MCP server reachable (N hives: ...)
+✓ MCP server reachable (N indexes: ...)
 ✓ Auth token configured
-✓ Project topology block in ./AGENTS.md (N hives mapped)
+✓ Project topology block in ./AGENTS.md (N indexes mapped)
 ✓ N project memories migrated
 ○ Smart-recall helper (skipped)
 ```
@@ -186,7 +186,7 @@ Then this exact closing block:
 > 1. At the start of a new session, invoke `load-context` with a short description of what you're working on. That pre-loads relevant memory.
 > 2. At the end of a session, invoke `capture-session-learnings` so new insights get captured.
 >
-> When docs feel stale, try `design-codebase-docs`. When you add/remove hives, re-run `generate-agents-md`. Rerun `getting-started` anytime to revisit these steps.
+> When docs feel stale, try `design-codebase-docs`. When you add/remove Indexes, re-run `generate-agents-md`. Rerun `getting-started` anytime to revisit these steps.
 
 ## Important rules
 
