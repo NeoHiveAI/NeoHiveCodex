@@ -10,7 +10,7 @@ You are migrating a user's existing project knowledge (`CLAUDE.md`, `AGENTS.md`,
 **Two non-negotiable rules for this skill:**
 
 1. **Read-only until confirmation.** Scan, classify, present a preview. Do NOT call `memory_store` until the user explicitly says go.
-2. **Project-specific only.** User-preference content ("I prefer tabs", "my editor is helix") must never land in a shared hive. If classification is ambiguous, default to excluding.
+2. **Project-specific only.** User-preference content ("I prefer tabs", "my editor is helix") must never land in a shared index. If classification is ambiguous, default to excluding.
 
 ## Arguments
 
@@ -93,18 +93,18 @@ For each candidate, assign:
 
 **Tags:** 3–6 domain-specific terms someone would search for.
 
-## Phase 4 — Pick a target hive
+## Phase 4 — Pick a target Index
 
-Call `list_hives`. Report the list with descriptions. Ask the user which hive should receive these memories. Recommend the hive whose description best matches the project (e.g. a hive whose description names the repo's primary language or domain).
+Call `list_indexes`. Report the list with descriptions. Ask the user which Index should receive these memories. Recommend the Index whose description best matches the project (e.g. an Index whose description names the repo's primary language or domain).
 
-If only one hive exists, skip the question: "Using the only available hive: `<name>`."
+If only one Index exists, skip the question: "Using the only available Index: `<name>`."
 
 ## Phase 5 — Preview and confirm
 
 Build a preview table of **only the `project`-scoped candidates**:
 
 ```
-Ready to migrate N project-scoped memories to hive `<hive-name>`.
+Ready to migrate N project-scoped memories to index `<index-name>`.
 (Skipping M user-scoped + K ambiguous candidates — see below.)
 
  #    type         imp   content (first 80 chars)
@@ -139,7 +139,7 @@ For each approved candidate:
     - **Weak/partial match:** store anyway — new semantic angle.
     - **No match:** store.
 3. Call `memory_store` with:
-    - `hive`: the chosen hive
+    - `index`: the chosen Index
     - `content`: the candidate content (full, not truncated)
     - `type`, `tags`, `importance` from Phase 3
     - `metadata`: `{"source": "migrate-memory", "origin_file": "<path>", "origin_line": <line>}`
@@ -160,13 +160,13 @@ Migration complete.
 
 Next: update your AGENTS.md / CLAUDE.md to reference NeoHive instead
 of duplicating these rules. Run revise-vector-memory at the end of
-each session to keep the hive fresh.
+each session to keep the index fresh.
 ```
 
 ## Important rules
 
-- **NEVER write to a hive before Phase 5 confirmation.**
+- **NEVER write to an Index before Phase 5 confirmation.**
 - **NEVER migrate user-scoped files.** Contents of `~/.codex/`, `~/.claude/`, `~/.cursor/` are per-user by definition.
 - **NEVER guess at classification.** When ambiguous, mark ambiguous and surface it.
 - **ALWAYS preserve the full content.** Do not summarize candidates before storing.
-- **If `list_hives` fails, stop immediately.** Tell the user the MCP server is not reachable and point them at the `getting-started` skill.
+- **If `list_indexes` fails, stop immediately.** Tell the user the MCP server is not reachable and point them at the `getting-started` skill.

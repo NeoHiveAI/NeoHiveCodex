@@ -28,7 +28,7 @@ Survey existing documentation in the repo and report:
 5. Cross-references — grep for broken links like `](./` paths and report count
 6. Identify the codebase's primary logical boundaries (subservices, packages, apps) — give a flat list
 
-If this repo has an indexed NeoHive hive of type `repo`, prefer `memory_recall` for items 1, 3, and 6 — semantic recall on "documentation overview", "module structure top-level boundaries", "README primary audience" will surface relevant snippets faster than walking the tree.
+If this repo has an indexed NeoHive index of type `repo`, prefer `memory_recall` for items 1, 3, and 6 — semantic recall on "documentation overview", "module structure top-level boundaries", "README primary audience" will surface relevant snippets faster than walking the tree.
 
 Summarize the discovery back to the user in 5–8 lines, then stop for acknowledgement.
 
@@ -163,9 +163,9 @@ If "tweak": ask what section, rewrite, re-preview.
 
 ## Phase 5 — Save the gold standard to NeoHive
 
-Call `list_hives`. Ask which hive (default to the one matching the repo). Then `memory_store` with:
+Call `list_indexes`. Ask which Index (default to the one matching the repo). Then `memory_store` with:
 
-- `hive`: chosen hive
+- `index`: chosen Index
 - `type`: `convention`
 - `content`: the full `DOC_STANDARD.md` contents (this is the canonical reference for future sessions)
 - `tags`: `["documentation", "standard", "gold-standard", <repo-name>, <primary-audience-keyword>]`

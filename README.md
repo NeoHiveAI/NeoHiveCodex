@@ -1,6 +1,9 @@
 # NeoHiveCodex
 
-An OpenAI Codex plugin for the [NeoHive](https://github.com/NeoHiveAi) cognitive memory system. Install this plugin to wire Codex into any NeoHive MCP server — persistent semantic memory across sessions, automatic context recall, and post-session learning extraction.
+An OpenAI Codex plugin for the [NeoHive](https://neohive.ai) cognitive memory system. Install this plugin to wire Codex into any NeoHive MCP server — persistent semantic memory across sessions, automatic context recall, and post-session learning extraction.
+
+> **[NeoHive](https://neohive.ai)** — the context engineering layer for AI coding agents.
+> Official site: **[neohive.ai](https://neohive.ai)** · Docs: **[docs.neohive.ai](https://docs.neohive.ai)**
 
 ## Quick Start
 
@@ -33,7 +36,7 @@ export NEOHIVE_MCP_HINTS=0
 | Rules | `rules/neohive.md`          | Persistent tool-usage instructions: when to call `memory_context` / `memory_recall` / `memory_store`, recall-first guidance for codebase exploration, prose-encoded guidance for delegated exploration (the Codex analogue of Claude's `explore-neohive` subagent + PreToolUse hook). |
 | Skill | `getting-started`           | First-run setup orchestrator: verifies MCP, sets up auth, generates topology, migrates memory, surfaces next steps.                                                                                                                                                                   |
 | Skill | `load-context`              | Pre-load relevant NeoHive memories for the current task via `memory_context`. Run at the start of every session.                                                                                                                                                                      |
-| Skill | `generate-agents-md`        | Survey connected hives and write a project-specific topology block into `./AGENTS.md` (hive table, write-routing, session-start non-negotiables). Re-runnable when hives change.                                                                                                      |
+| Skill | `generate-agents-md`        | Survey connected Indexes and write a project-specific topology block into `./AGENTS.md` (Index table, write-routing, session-start non-negotiables). Re-runnable when Indexes change.                                                                                                 |
 | Skill | `migrate-memory`            | Scan local memory files (`CLAUDE.md`, `AGENTS.md`, `.cursor/rules`, `.codex/rules`) and migrate project-scoped entries into NeoHive.                                                                                                                                                  |
 | Skill | `design-codebase-docs`      | Design a documentation gold standard through guided dialogue, save to NeoHive, validate with 2–3 sample pages, then hand off to a fresh session.                                                                                                                                      |
 | Skill | `enable-smart-prompts`      | Generate a tailored prompt-rewriting helper that rewrites prompts with a small model before querying NeoHive. Codex hook-wiring is platform-dependent — see the skill for current guidance.                                                                                           |
@@ -77,3 +80,10 @@ The `enable-smart-prompts` skill installs a standalone shell helper. Wiring it i
 ## Versioning
 
 Plugins are cached by version at `~/.codex/plugins/cache/$MARKETPLACE_NAME/$PLUGIN_NAME/$VERSION/`. Bump `version` in `.codex-plugin/plugin.json` on every change — without a bump, installed users will not see updates. For local development, restart Codex after edits so the local install picks up changes.
+
+## About NeoHive
+
+[**NeoHive**](https://neohive.ai) is the one shared memory layer that runs entirely on your own infrastructure, works across every AI agent your team uses, and remembers what your team learns — not just what's in the code.
+
+- 🌐 [neohive.ai](https://neohive.ai)
+- 📚 [docs.neohive.ai](https://docs.neohive.ai)
